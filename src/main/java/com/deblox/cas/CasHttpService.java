@@ -84,6 +84,7 @@ public class CasHttpService extends Verticle {
         routeMatcher.get("/logout", new Handler<HttpServerRequest>() {
             @Override
             public void handle(HttpServerRequest event) {
+                SessionStorage.remove(SessionStorage.getOrCreateSessionId(event), "auth");
                 redirect(event, cas_redirectUrl + "/logout");
             }
         });
@@ -140,6 +141,14 @@ public class CasHttpService extends Verticle {
         request.response().end();
     }
 
+    public static void redirect(HttpServerRequest request, String path, Boolean redirectToPath, final Handler<HttpServerRequest> callback) {
+        if (redirectToPath.equals(true)) {
+            redirect(request, path);
+        } else if (!callback.equals(null)) {
+            callback.handle(request);
+        }
+    }
+
 
     /**
      * Take the request, path and authenticate it, then either redirect to the path or call the callback handler.
@@ -155,6 +164,13 @@ public class CasHttpService extends Verticle {
     public void authenticate(final HttpServerRequest event, final String path, final Boolean redirectToPath, final Handler<HttpServerRequest> callback) {
         String hostAddr = event.headers().get("host");
         String serviceURL = path;
+        final String sessionId = SessionStorage.getOrCreateSessionId(event);
+        final Boolean sessionAuth = (Boolean)SessionStorage.get(sessionId, "auth");
+
+        logger.info("SessionStorage sessionId: " + sessionId);
+        logger.info("SessionStorage sessionAuth:" + sessionAuth);
+        logger.info("bool " + (Boolean)sessionAuth);
+
         try {
             serviceURL = URLEncoder.encode("http://" + hostAddr + path, "UTF-8");
         } catch (UnsupportedEncodingException e) {
@@ -163,9 +179,15 @@ public class CasHttpService extends Verticle {
 
         logger.info("ServiceURL: " + serviceURL);
 
-        if (!event.params().contains("ticket")) {
-            logger.info("no ticket, redirecting to cas");
+        if (!event.params().contains("ticket") && sessionAuth==null) {
+            logger.info("no ticket, no session:auth, redirecting to CAS");
             redirect(event, cas_redirectUrl + "/login?service=" + serviceURL);
+            return;
+        }
+
+        if (sessionAuth!=null && sessionAuth.equals(true)) {
+            logger.info("session is already authorized, skipping CAS, sessionAuth: " + sessionAuth);
+            redirect(event, path, redirectToPath, callback);
             return;
         }
 
@@ -190,20 +212,19 @@ public class CasHttpService extends Verticle {
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
                             redirect(event, "/fail");
+                            return;
                         }
 
                         if (!result.equalsIgnoreCase("yes")) {
                             logger.info("not authorized");
                             redirect(event, "/unauthorized");
+                            return;
                         } else {
+                            logger.info("Success");
+                            SessionStorage.remove("auth");
+                            SessionStorage.save(sessionId, "auth", true);
                             logger.info("redirect to " + path);
-                            if (redirectToPath.equals(true)) {
-                                logger.info("redirecting to " + path);
-                                redirect(event, path);
-                            } else if (!callback.equals(null)) {
-                                logger.info("calling callback");
-                                callback.handle(event);
-                            }
+                            redirect(event, path, redirectToPath, callback);
                             return;
                         }
                     }

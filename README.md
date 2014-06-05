@@ -13,7 +13,7 @@ password Mellon
 
 ## Config
 
-```
+```json
 {
   "main":"com.deblox.cas.CasHttpService", // main class to boot
   "casHost": "localhost", // hostname the casClient should use to reach CAS
