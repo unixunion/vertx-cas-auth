@@ -4,6 +4,7 @@ package com.deblox.cas;
  * Created by keghol on 6/3/14.
  */
 
+import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.DefaultCookie;
@@ -11,7 +12,6 @@ import io.netty.handler.codec.http.ServerCookieEncoder;
 import org.pac4j.core.profile.CommonProfile;
 import org.vertx.java.core.http.HttpServerRequest;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -91,7 +91,7 @@ public final class SessionStorage {
      */
     public static void saveProfile(final String sessionId, final CommonProfile profile) {
         if (sessionId != null) {
-            save(sessionId, profile, Constants.PROFILE_TIMEOUT);
+            save(sessionId, profile);
         }
     }
 
@@ -151,7 +151,8 @@ public final class SessionStorage {
      */
     public static void save(final String sessionId, final String key, final Object value) {
         if (sessionId != null) {
-            save(sessionId + Constants.SEPARATOR + key, value, Constants.PROFILE_TIMEOUT);
+            save(sessionId + Constants.SEPARATOR + key, value);
+            save(sessionId + Constants.SEPARATOR + "expiry", System.currentTimeMillis() + Constants.PROFILE_TIMEOUT);
         }
     }
 
@@ -181,9 +182,8 @@ public final class SessionStorage {
      *
      * @param key
      * @param value
-     * @param timeout
      */
-    public static void save(final String key, final Object value, final int timeout) {
+    public static void save(final String key, final Object value) {
         if (value == null) {
             map.remove(key);
         } else {
@@ -200,9 +200,29 @@ public final class SessionStorage {
         map.remove(key);
     }
 
+    /**
+     * a very dirty session cleanup implementation
+     */
     public static void sessionCleanup() {
         for (Object o : map.entrySet()) {
-            System.out.println("Object: " + o.toString());
+            try {
+                System.out.println("Object: " + o.toString());
+                long expiry = (long) get(o.toString().split(Constants.SEPARATOR)[0] + Constants.SEPARATOR + "expiry");
+                String sessionId = o.toString().split(Constants.SEPARATOR)[0];
+                System.out.println("Check sessionId: " + sessionId);
+                System.out.println("Expiry: " + expiry);
+
+                if (System.currentTimeMillis() > expiry) {
+                    System.out.println("EXPIRED!");
+                    remove(sessionId);
+                    remove(sessionId + Constants.SEPARATOR + "auth");
+                    remove(sessionId + Constants.SEPARATOR + "expiry");
+                }
+            } catch (Exception e) {
+                System.out.println("no expiry found for " + o.toString() + ", its probably already been nuked");
+            }
+
+
         }
     }
 

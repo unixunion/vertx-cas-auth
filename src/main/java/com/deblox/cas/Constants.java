@@ -15,8 +15,8 @@ public interface Constants {
 
     public final static String REQUESTED_URL = "debloxRequestedUrl";
 
-    public final static String SEPARATOR = "$";
+    public final static String SEPARATOR = "::"; // this is used in regexes, so dont use special chars like $
 
-    public final static Integer PROFILE_TIMEOUT = 3600; // this needs to be used to cleanup old sessions!
+    public final static Integer PROFILE_TIMEOUT = 15000; // in milliseconds
 
 }

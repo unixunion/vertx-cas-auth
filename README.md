@@ -41,6 +41,8 @@ http://localhost:3001/someservice
 
 ## SessionStorage
 
+A simple SessionStorage is implemented as a ConcurrentMap with some basic Expiry support.
+
 After a successful login, the sessionId is given a auth boolean to save on CAS calls in the future. This
 is all just POC code, and will leak memory, The SessionStorage class should probably put the data in CouchBase
 or mongo with expiry times set.

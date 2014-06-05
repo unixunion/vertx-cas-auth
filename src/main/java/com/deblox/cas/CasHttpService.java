@@ -177,7 +177,6 @@ public class CasHttpService extends Verticle {
 
         logger.info("SessionStorage sessionId: " + sessionId);
         logger.info("SessionStorage sessionAuth:" + sessionAuth);
-        logger.info("bool " + (Boolean)sessionAuth);
 
         try {
             serviceURL = URLEncoder.encode("http://" + hostAddr + path, "UTF-8");
@@ -215,7 +214,9 @@ public class CasHttpService extends Verticle {
                         String result = null;
                         try {
                             data = new String(body.getBytes(), "UTF-8").split("\n");
+                            logger.info("response from CAS:");
                             logger.info(new String(body.getBytes(), Charset.forName("UTF-8")));
+                            logger.info("end response");
                             result = data[0];
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
