@@ -132,6 +132,14 @@ public class CasHttpService extends Verticle {
         logger.info("   ssl: " + ssl);
         logger.info("   trustAll: " + trustAll);
 
+        logger.info("Starting sessionExpiry timer");
+        long timerID = vertx.setPeriodic(10000, new Handler<Long>() {
+            public void handle(Long timerID) {
+                logger.info("Cleaning out old sessions");
+                SessionStorage.sessionCleanup();
+            }
+        });
+
     }
 
     // redirect request to path

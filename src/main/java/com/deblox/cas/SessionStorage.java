@@ -200,4 +200,10 @@ public final class SessionStorage {
         map.remove(key);
     }
 
+    public static void sessionCleanup() {
+        for (Object o : map.entrySet()) {
+            System.out.println("Object: " + o.toString());
+        }
+    }
+
 }
