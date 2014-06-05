@@ -2,8 +2,9 @@
 
 This is a simple example of CAS integration with VertX HTTP Server. When accessing the URLS this service offers, 
 it will check the session for:
+
  * a sessionId
- * a auth bool in the SessionStorage system
+ * a auth boolean on the sessionId in the SessionStorage
  * a CAS ticket
  
  If the sessionId is not set as authenticated in the SessionStorage system, it checks for the CAS ticket. If that also
