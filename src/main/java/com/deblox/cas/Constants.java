@@ -17,6 +17,6 @@ public interface Constants {
 
     public final static String SEPARATOR = "$";
 
-    public final static Integer PROFILE_TIMEOUT = 3600;
+    public final static Integer PROFILE_TIMEOUT = 3600; // this needs to be used to cleanup old sessions!
 
 }

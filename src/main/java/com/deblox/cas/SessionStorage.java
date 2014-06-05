@@ -3,18 +3,18 @@ package com.deblox.cas;
 /**
  * Created by keghol on 6/3/14.
  */
-import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
+
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.DefaultCookie;
 import io.netty.handler.codec.http.ServerCookieEncoder;
+import org.pac4j.core.profile.CommonProfile;
+import org.vertx.java.core.http.HttpServerRequest;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import org.pac4j.core.profile.CommonProfile;
-import org.vertx.java.core.http.HttpServerRequest;
 
 /**
  * Helper class to save and retrieve information like session attribute or saved request url during
@@ -25,6 +25,8 @@ import org.vertx.java.core.http.HttpServerRequest;
  *
  * @author Michael Remond
  * @since 1.0.0
+ *
+ * Caveat! nothing cleans up the old sessions, memory will leak!
  *
  */
 public final class SessionStorage {
@@ -175,6 +177,7 @@ public final class SessionStorage {
 
     /**
      * Save an object in storage.
+     * save(sessionId + Constants.SEPARATOR + key, value, Constants.PROFILE_TIMEOUT);
      *
      * @param key
      * @param value
