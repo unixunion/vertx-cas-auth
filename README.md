@@ -38,3 +38,9 @@ http://localhost:3001/someservice
 ```
 ./gradlew run -i
 ```
+
+## SessionStorage
+
+After a successful login, the sessionId is given a auth boolean to save on CAS calls in the future. This
+is all just POC code, and will leak memory, The SessionStorage class should probably put the data in CouchBase
+or mongo with expiry times set.
