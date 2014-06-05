@@ -1,7 +1,7 @@
 # Vert.x CAS Auth
 
-This is a simple example of CAS integration with VertX HTTP Server. When accessing the URLS this service offers, 
-it will check the session for:
+This is a simple example of CAS integration with the vertx HttpServer. When accessing the /login or /someservice URL's 
+this service offers, the app will check the session for:
 
  * a sessionId in the request
  * a matching sessionId in the SessionStorage
