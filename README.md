@@ -9,7 +9,7 @@ this service offers, the app will check the session for:
  * a CAS ticket
  
 If the sessionId is not marked as "auth" in the SessionStorage system, it will check the request for the CAS ticket. 
-If a ticket is found its queried against the CAS server for the serviceUrl, if the ticket is not valid or does not exist, 
+If a ticket is found its queried against the CAS server for the requested service / URI, if the ticket is not valid or does not exist, 
 the request is redirected to CAS for authentication.
  
 
