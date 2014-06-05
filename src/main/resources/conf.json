@@ -1,0 +1,9 @@
+{
+  "main":"com.deblox.cas.CasHttpService", // main class to boot
+  "casHost": "localhost", // hostname the casClient should use to reach CAS
+  "casPort": 8443, // port the casClient should use
+  "cas_redirectUrl": "https://localhost:8443/cas", // used in redirects, NO trails!
+  "keepAlive": true, // keep connection to Cas Alive or not.
+  "trustAll": true, // allows self-signed certs for DEV
+  "ssl": true
+}

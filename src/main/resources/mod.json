@@ -1,0 +1,10 @@
+{
+  "main":"com.deblox.Boot",
+  "description":"Put description of your module here",
+  "licenses": ["The Apache Software License Version 2.0"],
+  "author": "Joe Bloggs",
+  "developers": ["Kegan Holtzhausen"],
+  "keywords": ["cas"],
+  "homepage": "http://github.com/unixunion/vertx-cas-auth",
+  "auto-redeploy": true
+}
