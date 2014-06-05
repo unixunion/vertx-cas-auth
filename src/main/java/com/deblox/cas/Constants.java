@@ -17,6 +17,6 @@ public interface Constants {
 
     public final static String SEPARATOR = "::"; // this is used in regexes, so dont use special chars like $
 
-    public final static Integer PROFILE_TIMEOUT = 15000; // in milliseconds
+    public final static Integer PROFILE_TIMEOUT = 60000; // in milliseconds
 
 }
