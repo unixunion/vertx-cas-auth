@@ -38,13 +38,14 @@ public class CasHttpService extends Verticle {
     Boolean keepAlive;
     Boolean ssl;
     Boolean trustAll;
-
     JsonObject config = null;
     HttpClient casClient;
     HttpServer server;
     RouteMatcher routeMatcher;
 
-
+    /**
+     * start the verticle and the http listeners
+     */
     public void start() {
         logger = container.logger();
         logger.info("Staring CAS service");
@@ -63,7 +64,7 @@ public class CasHttpService extends Verticle {
         routeMatcher.get("/unauthorized", new Handler<HttpServerRequest>() {
             @Override
             public void handle(HttpServerRequest event) {
-                event.response().end("Not Authorized");
+                event.response().end("Not authorized, or ticket invalid");
             }
         });
 
@@ -77,7 +78,12 @@ public class CasHttpService extends Verticle {
         routeMatcher.get("/loggedin", new Handler<HttpServerRequest>() {
             @Override
             public void handle(HttpServerRequest event) {
-                event.response().end("Logged in");
+                authenticate(event, "/loggedin", new Handler<HttpServerRequest>() {
+                    @Override
+                    public void handle(HttpServerRequest event) {
+                        event.response().end("Logged in");
+                    }
+                });
             }
         });
 
@@ -225,9 +231,16 @@ public class CasHttpService extends Verticle {
                         }
 
                         if (!result.equalsIgnoreCase("yes")) {
-                            logger.info("not authorized");
-                            redirect(event, "/unauthorized");
-                            return;
+                            logger.info("not authorized " + event.path());
+                            // try if a ticket in the request, try redirect without the ticket, if no ticket, fail!
+                            if (event.params().contains("ticket")) {
+                                redirect(event, event.path());
+                                return;
+                            } else {
+                                redirect(event, "/unauthorized");
+                                return;
+                            }
+
                         } else {
                             logger.info("Success");
                             SessionStorage.remove("auth");
