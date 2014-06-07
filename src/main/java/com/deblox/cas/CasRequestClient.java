@@ -62,8 +62,8 @@ HttpClient casClient = vertx.createHttpClient()
 
 public class CasRequestClient {
 
-    static String cas_redirectUrl;
-    static HttpClient casClient;
+    static String cas_redirectUrl; // the complete URL to you CAS login service
+    static HttpClient casClient; // a instance of HttpClient which is connected to the CAS service host and port.
 
     public static String getCas_redirectUrl() {
         return cas_redirectUrl;
@@ -81,13 +81,25 @@ public class CasRequestClient {
         CasRequestClient.casClient = casClient;
     }
 
-    // redirect request to path
+    /**
+     * redirect the request to the path specified
+     *
+     * @param request
+     * @param path
+     */
     public static void redirect(HttpServerRequest request, String path) {
         request.response().headers().set("Location", path);
         request.response().setStatusCode(302);
         request.response().end();
     }
 
+    /**
+     * redirect the request to the path OR callback depending on which are set
+     * @param request
+     * @param path
+     * @param redirectToPath
+     * @param callback
+     */
     public static void redirect(HttpServerRequest request, String path, Boolean redirectToPath, final Handler<HttpServerRequest> callback) {
         if (redirectToPath.equals(true)) {
             redirect(request, path);
@@ -97,7 +109,7 @@ public class CasRequestClient {
     }
 
     /**
-     * Take the request, path and authenticate it, then either redirect to the path or call the callback handler.
+     * Take the request, path and authenticate it, then call redirect
      *
      * @param event<HttpServerRequest> the http request object
      * @param path<String> the url or "service" requesting access to
