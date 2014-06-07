@@ -55,12 +55,12 @@ dependencies {
 //  provided "org.codehaus.groovy:groovy-all:$groovyVersion"
 //  provided "io.vertx:lang-groovy:$groovyLangModVersion@jar"
 //    compile "com.github.spullara.mustache.java:compiler:0.8.15"
-//    compile 'com.jetdrone:yoke:1.0.18'
-//    compile 'com.intellij:annotations:12.0'
+    compile 'com.jetdrone:yoke:1.0.18'
+    compile 'com.intellij:annotations:12.0'
     compile 'org.pac4j:pac4j-core:1.5.1'
 //    compile 'org.pac4j:pac4j-oauth:1.5.1'
-    compile "org.jasig.cas:cas-server-webapp:$casVersion"
-    compile "org.jasig.cas:cas-server-support-generic:$casVersion"
+//    compile "org.jasig.cas:cas-server-webapp:$casVersion"
+//    compile "org.jasig.cas:cas-server-support-generic:$casVersion"
 
 }
 

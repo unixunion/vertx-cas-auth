@@ -13,6 +13,8 @@ public interface Constants {
 
     public final static String SESSION_ID = "debloxSessionId";
 
+    public final static String USER_ID = "username"; // field name in the params of request to store username in
+
     public final static String REQUESTED_URL = "debloxRequestedUrl";
 
     public final static String SEPARATOR = "::"; // this is used in regexes, so dont use special chars like $

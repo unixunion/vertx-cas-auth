@@ -1,10 +1,12 @@
 package com.deblox.cas;
 
+import com.jetdrone.vertx.yoke.Yoke;
+import com.jetdrone.vertx.yoke.middleware.Favicon;
+import com.jetdrone.vertx.yoke.middleware.Router;
+import com.jetdrone.vertx.yoke.middleware.Static;
+import com.jetdrone.vertx.yoke.middleware.YokeRequest;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpClient;
-import org.vertx.java.core.http.HttpServer;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.platform.Verticle;
@@ -12,7 +14,7 @@ import org.vertx.java.platform.Verticle;
 /**
  * Created by Kegan Holtzhausen on 6/4/14.
  *
- * this is a simple CAS integration example in VertX.io
+ * this is a simple CAS integration example in VertX.io + Yoke middleware
  *
  * Config file example:
 
@@ -32,21 +34,20 @@ public class CasHttpService extends Verticle {
     Logger logger;
     String casHost;
     Integer casPort;
-    String cas_redirectUrl;
     Boolean keepAlive;
     Boolean ssl;
     Boolean trustAll;
+    String cas_redirectUrl;
     JsonObject config = null;
     HttpClient casClient;
-    HttpServer server;
-    RouteMatcher routeMatcher;
+    Yoke yoke;
 
     /**
-     * start the verticle and the http listeners
+     * start the Verticle and the http listener
      */
     public void start() {
         logger = container.logger();
-        logger.info("Staring CAS service");
+        logger.info("Starting CAS service");
 
         config = container.config();
         casHost = config.getString("casHost", "localhost"); // cas server hostname
@@ -54,77 +55,9 @@ public class CasHttpService extends Verticle {
         keepAlive = config.getBoolean("keepAlive", false);  // keep connection to CAS alive or not.
         ssl = config.getBoolean("ssl", false); // use SSL to talk to the CAS server
         trustAll = config.getBoolean("trustAll", false); // trust any CA cert ( use for DEVELOPMENT ONLY! )
+        cas_redirectUrl = config.getString("cas_redirectUrl");
 
-        CasRequestClient.setCas_redirectUrl(config.getString("cas_redirectUrl"));
-
-
-        server = vertx.createHttpServer();
-        routeMatcher = new RouteMatcher();
-
-        routeMatcher.get("/unauthorized", new Handler<HttpServerRequest>() {
-            @Override
-            public void handle(HttpServerRequest event) {
-                event.response().end("Not authorized, or ticket invalid");
-            }
-        });
-
-        routeMatcher.get("/fail", new Handler<HttpServerRequest>() {
-            @Override
-            public void handle(HttpServerRequest event) {
-                event.response().end("CAS failure");
-            }
-        });
-
-        routeMatcher.get("/loggedin", new Handler<HttpServerRequest>() {
-            @Override
-            public void handle(HttpServerRequest event) {
-                CasRequestClient.authenticate(event, "/loggedin", new Handler<HttpServerRequest>() {
-                    @Override
-                    public void handle(HttpServerRequest event) {
-                        event.response().end("Logged in");
-                    }
-                });
-            }
-        });
-
-        routeMatcher.get("/logout", new Handler<HttpServerRequest>() {
-            @Override
-            public void handle(HttpServerRequest event) {
-                SessionStorage.remove(SessionStorage.getOrCreateSessionId(event), "auth");
-                redirect(event, CasRequestClient.getCas_redirectUrl() + "/logout");
-            }
-        });
-
-        routeMatcher.get("/login", new Handler<HttpServerRequest>() {
-            @Override
-            public void handle(HttpServerRequest event) {
-                logger.info("login: " + event.uri());
-                CasRequestClient.authenticate(event, "/loggedin");
-            }
-        });
-
-        /*
-        some generic service you want to CAS-ify
-         */
-        routeMatcher.get("/someservice", new Handler<HttpServerRequest>() {
-
-            /* handle requests to /someservice */
-            @Override
-            public void handle(HttpServerRequest event) {
-                logger.info("someservice: " + event.uri());
-                /* authenticate the service and setup a handler for if its successful */
-                CasRequestClient.authenticate(event, "/someservice",new Handler<HttpServerRequest>() {
-                    @Override
-                    public void handle(HttpServerRequest event) {
-                        logger.info("someservice callback");
-                        event.response().end("this is the secured area!");
-                    }
-                });
-            }
-        });
-
-        server.requestHandler(routeMatcher).listen(3001, "localhost");
-
+        // push the CAS client to the CasClient static casClient
         logger.info("Connecting to CAS");
         casClient = vertx.createHttpClient()
                 .setPort(casPort)
@@ -132,9 +65,36 @@ public class CasHttpService extends Verticle {
                 .setKeepAlive(keepAlive)
                 .setSSL(ssl)
                 .setTrustAll(trustAll);
+        CasClient.setCasClient(casClient);
+        CasClient.setCasRedirectURL(cas_redirectUrl);
 
-        // set the CasRequestClients connection up
-        CasRequestClient.setCasClient(casClient);
+        // Yoke server
+        yoke = new Yoke(vertx)
+                .use(new Favicon())
+                .use(new Static("webroot"))
+                .use(new AuthRouter()
+                                .all("/authservice", new Handler<YokeRequest>() {
+                                    @Override
+                                    public void handle(YokeRequest event) {
+                                        event.response().end("login user: " + event.params().get(Constants.USER_ID));
+                                    }
+                                })
+                )
+                .use(new Router()
+                        .all("/openservice", new Handler<YokeRequest>() {
+                            @Override
+                            public void handle(YokeRequest event) {
+                                event.response().end("open service");
+                            }
+                        })
+                        .all("/logout", new Handler<YokeRequest>() {
+                            @Override
+                            public void handle(YokeRequest event) {
+                                event.response().redirect(CasClient.getCasRedirectURL() + "/logout");
+                            }
+                        })
+                )
+                .listen(3000);
 
         logger.info("Starting sessionExpiry timer");
         long timerID = vertx.setPeriodic(10000, new Handler<Long>() {
@@ -144,21 +104,6 @@ public class CasHttpService extends Verticle {
             }
         });
 
-    }
-
-    // redirect request to path
-    public static void redirect(HttpServerRequest request, String path) {
-        request.response().headers().set("Location", path);
-        request.response().setStatusCode(302);
-        request.response().end();
-    }
-
-    public static void redirect(HttpServerRequest request, String path, Boolean redirectToPath, final Handler<HttpServerRequest> callback) {
-        if (redirectToPath.equals(true)) {
-            redirect(request, path);
-        } else if (!callback.equals(null)) {
-            callback.handle(request);
-        }
     }
 
 }

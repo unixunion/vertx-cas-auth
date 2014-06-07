@@ -4,7 +4,6 @@ package com.deblox.cas;
  * Created by keghol on 6/3/14.
  */
 
-import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.DefaultCookie;
@@ -24,9 +23,7 @@ import java.util.concurrent.ConcurrentMap;
  * Future implementation should use Vert.x session module.
  *
  * @author Michael Remond
- * @since 1.0.0
- *
- * Caveat! nothing cleans up the old sessions, memory will leak!
+ * @author Kegan Holtzhausen
  *
  */
 public final class SessionStorage {
@@ -56,6 +53,7 @@ public final class SessionStorage {
         sessionId = generateSessionId();
         req.params().add(Constants.SESSION_ID, sessionId);
         Cookie cookie = new DefaultCookie(Constants.VERTX_SESSION_COOKIE, sessionId);
+
         cookie.setPath("/");
         req.response().putHeader("Set-Cookie", ServerCookieEncoder.encode(cookie));
         return sessionId;
@@ -216,6 +214,7 @@ public final class SessionStorage {
                     System.out.println("EXPIRED!");
                     remove(sessionId);
                     remove(sessionId + Constants.SEPARATOR + "auth");
+                    remove(sessionId + Constants.SEPARATOR + "username");
                     remove(sessionId + Constants.SEPARATOR + "expiry");
                 }
             } catch (Exception e) {
