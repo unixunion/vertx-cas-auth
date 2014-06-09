@@ -5,5 +5,6 @@
   "cas_redirectUrl": "https://localhost:8443/cas", // used in redirects, NO trails!
   "keepAlive": true, // keep connection to Cas Alive or not.
   "trustAll": true, // allows self-signed certs for DEV
-  "ssl": true
+  "ssl": true,
+  "webroot": "static"
 }
