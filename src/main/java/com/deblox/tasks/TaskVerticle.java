@@ -18,7 +18,7 @@ import org.vertx.java.core.logging.Logger;
  *
  * newTask - creates a new task and persist it, accepts name, document and appid, returns utid
  *  can accept a string or json object representation over messagebus, see TaskVerticleTests
- * getTask - retrieves a task by utid
+ * task - retrieves a task by utid
  * nextStage - bumps the stage by utid
  * getStage - returns the current stage information by utid
  * periodicCheck - periodically check through open tasks, lock them and do stuff
@@ -83,17 +83,12 @@ public class TaskVerticle extends BusModBase {
 
        try {
            task = newTask(taskName, documentId, appId);
-           JsonObject request = Couch.Set(task.getUtid(), Task.toJson(task));
-           logger.info("couch message: " + request.toString());
-           logger.info("couch address:" + config.couchAddress);
-
-            // persist to Couch
-           eb.send(config.couchAddress, request, new Handler<Message>() {
-                        @Override
-                        public void handle(Message event) {
-                            sendOK(message, new JsonObject(event.body().toString()).getObject("response"));
-                        }
-                    }
+           updateTask(task, new Handler<Message>() {
+               @Override
+               public void handle(Message event) {
+                   sendOK(message, new JsonObject(event.body().toString()).getObject("response"));
+               }
+           }
            );
 
         } catch (Exception e) {
@@ -120,21 +115,33 @@ public class TaskVerticle extends BusModBase {
         logger.info("got message:" + message.body());
         try {
             JsonObject decoded_message = Util.decode(message);
-            JsonObject request = Couch.Get(decoded_message.getString("key"));
-            eb.send(config.couchAddress, request, new Handler<Message>() {
-                        @Override
-                        public void handle(Message event) {
-                            sendOK(message, new JsonObject(event.body().toString())
-                                    .getObject("response")
-                                    .getObject("data")
-                            );
-                        }
-                    }
-            );
+            String utid = decoded_message.getString("key");
+            getTask(utid, new Handler<JsonObject>() {
+                @Override
+                public void handle(JsonObject event) {
+                    sendOK(message, event);
+                }
+            });
+
         } catch (Exception e) {
             e.printStackTrace();
             ReplyHandler.sendError(message, "unable to get task by utid", e);
         }
+    }
+
+    public void getTask(String utid, final Handler<JsonObject> callback) {
+        JsonObject request = Couch.Get(utid);
+        eb.send(config.couchAddress, request, new Handler<Message>() {
+                    @Override
+                    public void handle(Message event) {
+                        JsonObject data = new JsonObject(event.body().toString())
+                                .getObject("response")
+                                .getObject("data");
+                        callback.handle(data);
+                    }
+                }
+        );
+
     }
 
     /**
@@ -153,6 +160,46 @@ public class TaskVerticle extends BusModBase {
             e.printStackTrace();
             throw new Exception("Unable to instantiate task");
         }
+
+    }
+
+
+    /**
+     * bump to next stage, call app responsible for stage with utid of document
+     * @param utid
+     */
+    public void nextStage(String utid) {
+
+        getTask(utid, new Handler<JsonObject>() {
+            @Override
+            public void handle(JsonObject event) {
+                Task t = Task.deserialize(event);
+                Stage s = t.nextStage();
+
+                // notify the app of the task and the document
+                eb.send(s.app + "." + s.task, t.utid);
+
+            }
+        });
+
+    }
+
+    /**
+     * create / update a task.
+     * @param task
+     * @param callback
+     */
+    public void updateTask(Task task, final Handler<Message> callback) {
+        JsonObject request = Couch.Set(task.getUtid(), Task.toJson(task));
+
+        // persist to Couch
+        eb.send(config.couchAddress, request, new Handler<Message>() {
+                    @Override
+                    public void handle(Message event) {
+                        callback.handle(event);
+                    }
+                }
+        );
 
     }
 

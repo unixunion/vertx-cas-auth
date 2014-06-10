@@ -63,17 +63,24 @@ public class Task {
         this.stages = stages;
     }
 
-    /**
-     * get the stage instance object
-     *
-     * @return Stage instance
-     */
     public Stage getCurrentStage() {
         return stages.get(currentStage);
     }
 
     public void setCurrentStage(int currentStage) {
         this.currentStage = currentStage;
+    }
+
+    // set and return the next stage
+    public Stage nextStage() {
+        if (currentStage<stages.size()) {
+            setCurrentStage(currentStage + 1);
+            return getCurrentStage();
+
+        } else {
+            setCurrentStage(stages.size());
+            return getCurrentStage();
+        }
     }
 
     public long getCurrentStageStartTime() {
