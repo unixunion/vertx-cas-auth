@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
  *
  */
 public class Config {
+    public static String couchAddress;
     public final String casHost;
     public final int casPort;
     public final boolean keepAlive;
@@ -35,6 +36,7 @@ public class Config {
         }
     }
     public Config(JsonObject config) {
+        couchAddress = config.getString("couchAddress", "vertx.couchbase.async");
         casHost = config.getString("casHost", "localhost"); // cas server hostname
         casPort = (int)config.getNumber("casPort", 8443); // port on the CAS server side.
         keepAlive = config.getBoolean("keepAlive", false);  // keep connection to CAS alive or not.

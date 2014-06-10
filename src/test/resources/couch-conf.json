@@ -1,0 +1,11 @@
+{
+  "async_mode": true,
+  "address": "vertx.couchbase.async",
+  "couchbase.nodelist": "localhost:8091",
+  "couchbase.bucket": "default",
+  "couchbase.bucket.password": "",
+  "couchbase.num.clients": 1,
+  "couchbase.manager": true,
+  "couchbase.manager.username": "Administrator",
+  "couchbase.manager.password": "password"
+}

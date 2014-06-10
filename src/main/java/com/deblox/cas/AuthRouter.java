@@ -21,7 +21,7 @@ import java.net.URLEncoder;
 public class AuthRouter extends Router {
 
     @Override
-    public void handle(@NotNull final YokeRequest request, @NotNull final Handler<Object> next) {
+    public void handle(@NotNull final YokeRequest request, @NotNull final Handler<Object> callbackHandler) {
 
         String hostAddr = request.headers().get("host");
         String serviceURL = request.path();
@@ -46,7 +46,7 @@ public class AuthRouter extends Router {
         if (sessionAuth!=null && sessionAuth.equals(true)) {
             System.out.println("already authenticated, passing through");
             request.params().add(Constants.USER_ID, SessionStorage.get(sessionId, Constants.USER_ID).toString());
-            super.handle(request, next);
+            super.handle(request, callbackHandler);
             return;
         }
 
@@ -78,7 +78,7 @@ public class AuthRouter extends Router {
                         if (!result.equalsIgnoreCase("yes")) {
                             // try if a ticket in the request, try redirect without the ticket, if no ticket, fail!
                             if (request.params().contains("ticket")) {
-                                System.out.println("ticket in url, might be old, redirect without ticket to url " + request.path());
+                                System.out.println("ticket in url, might be old, removing ticket");
                                 redirect(request, request.path());
                                 return;
                             } else {
@@ -94,9 +94,7 @@ public class AuthRouter extends Router {
                             SessionStorage.save(sessionId, "auth", true);
                             SessionStorage.save(sessionId, "username", data[1]);
                             request.params().add(Constants.USER_ID, data[1]);
-                            AuthRouter.super.handle(request, next);
-
-//                            redirect(request, request.uri(), false, next);
+                            AuthRouter.super.handle(request, callbackHandler);
                             return;
                         }
                     }

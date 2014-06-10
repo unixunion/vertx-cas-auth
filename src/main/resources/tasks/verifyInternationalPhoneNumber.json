@@ -1,0 +1,20 @@
+{
+    "name": "verifyInternationalPhoneNumber",
+	"stages": [
+		{
+			"app": "telephonics",
+			"task": "validateNumber",
+			"callback": null
+		},
+		{
+			"app": "telephonics",
+			"task": "smsCode",
+			"callback": "true"
+		},
+		{
+			"app": "ivault",
+			"task": "updateNumber",
+			"callback": null
+		}
+	]
+}

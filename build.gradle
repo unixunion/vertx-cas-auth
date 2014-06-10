@@ -52,12 +52,15 @@ dependencies {
   */
 
   // If you're creating Groovy compiled verticles you may need the following dependencies
-//  provided "org.codehaus.groovy:groovy-all:$groovyVersion"
-//  provided "io.vertx:lang-groovy:$groovyLangModVersion@jar"
+  provided "org.codehaus.groovy:groovy-all:$groovyVersion"
+  provided "io.vertx:lang-groovy:$groovyLangModVersion@jar"
 //    compile "com.github.spullara.mustache.java:compiler:0.8.15"
     compile 'com.jetdrone:yoke:1.0.18'
     compile 'com.intellij:annotations:12.0'
     compile 'org.pac4j:pac4j-core:1.5.1'
+    compile 'com.google.code.gson:gson:2.2.4'
+    testCompile "junit:junit:$junitVersion"
+    testCompile "io.vertx:testtools:$toolsVersion"
 //    compile 'org.pac4j:pac4j-oauth:1.5.1'
 //    compile "org.jasig.cas:cas-server-webapp:$casVersion"
 //    compile "org.jasig.cas:cas-server-support-generic:$casVersion"
@@ -69,7 +72,6 @@ test {
   include 'org/foo/**'
   exclude 'org/boo/**'
   */
-
 }
 
 /*

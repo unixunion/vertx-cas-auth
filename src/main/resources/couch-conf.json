@@ -1,0 +1,11 @@
+{
+  "async_mode": true, // tells the Boot class to start async or sync mode
+  "address": "vertx.couchbase.async", // the eventbus address this module listens on
+  "couchbase.nodelist": "localhost:8091", // comma separated list of couchbase nodes
+  "couchbase.bucket": "default", // the bucket to connect to
+  "couchbase.bucket.password": "", // password if any for the bucket
+  "couchbase.num.clients": 1, // number of clients to open towards the couch instances
+  "couchbase.manager": true,
+  "couchbase.manager.username": "Administrator",
+  "couchbase.manager.password": "password"
+}

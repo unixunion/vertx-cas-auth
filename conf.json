@@ -1,6 +1,7 @@
 {
   "main":"com.deblox.cms.Cms",
   //"main":"com.deblox.cas.CasHttpService", // main class to boot
+  "couchAddress": "vertx.couchbase.async",
   "casHost": "localhost", // hostname the casClient should use to reach CAS
   "casPort": 8443, // port the casClient should use
   "cas_redirectUrl": "https://localhost:8443/cas", // used in redirects, NO trails!

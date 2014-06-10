@@ -1,5 +1,6 @@
 package com.deblox;
 
+import com.deblox.utils.Util;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Future;
@@ -46,6 +47,28 @@ public class Boot extends Verticle {
                 }
             }
         });
+
+        // Deploy Couchbase module
+        JsonObject couchConfig = null;
+        try {
+            couchConfig = Util.loadConfig(this, "/couch-conf.json");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        container.deployModule("com.deblox~mod-couchbase~0.0.2-SNAPSHOT", couchConfig, 1, new AsyncResultHandler<String>() {
+            @Override
+            public void handle(AsyncResult<String> deployResult) {
+                if (deployResult.succeeded()) {
+                    startedResult.setResult(null);
+                } else {
+                    logger.error("error deploying module, " + deployResult.cause());
+                    startedResult.setFailure(deployResult.cause());
+                }
+
+            } // end handle
+
+        }); // end couch
+
     }
 
     static public JsonObject loadConfig(Object o, String file) {
