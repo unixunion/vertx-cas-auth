@@ -184,6 +184,10 @@ public class Task {
     }
 
 
+    /**
+     * just for logging in the console
+     * @return
+     */
     @Override
     public String toString() {
         return "TASK [taskName=" + taskName +
@@ -194,7 +198,7 @@ public class Task {
     }
 
     /**
-     * read up the 1st stage and kick it off
+     * start the process, lookup the 1st stage, do something with that.
      *
      *
 

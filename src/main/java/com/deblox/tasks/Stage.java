@@ -24,15 +24,15 @@ public class Stage {
 
     /**
      * convert jsonArray of stages into list of Stage instances
-     * @param jo
+     * @param stages, JsonArray of stages {"app": "someapp", "task":"some task name", "callback":"callback object"}
      * @return
      */
 
-    public static List<Stage> buildStages(JsonArray jo) {
+    public static List<Stage> buildStages(JsonArray stages) {
 
         List<Stage> result = new ArrayList<Stage>();
 
-        Iterator s = jo.iterator();
+        Iterator s = stages.iterator();
         while ( s.hasNext()) {
             Stage ts = new Stage((JsonObject)s.next());
             result.add(ts);

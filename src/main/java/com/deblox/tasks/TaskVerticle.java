@@ -60,7 +60,7 @@ public class TaskVerticle extends BusModBase {
 
 
     /**
-     * open the message and call newTask
+     * create a new task with the 3 core pieces of information
      *
      * {
      *  "taskName": "foo",
@@ -76,13 +76,13 @@ public class TaskVerticle extends BusModBase {
         // decode the Gson to Json
         JsonObject decoded_message = Util.decode(message);
         String taskName = decoded_message.getString("taskName", null); // the name of the task, must exist in resources/tasks
-        String documentId = decoded_message.getString("documentId", null); // the couch document this applies to
-        String appId = decoded_message.getString("appId", null); // the application this task belongs to, tasks can be shared by apps
+        String documentId = decoded_message.getString("documentId", null); // the couch document this task applies to
+        String uaid = decoded_message.getString("uaid", null); // the application this task belongs to, tasks can be shared by apps
 
         final Task task;
 
        try {
-           task = newTask(taskName, documentId, appId);
+           task = newTask(taskName, documentId, uaid);
            updateTask(task, new Handler<Message>() {
                @Override
                public void handle(Message event) {
@@ -92,7 +92,7 @@ public class TaskVerticle extends BusModBase {
            );
 
         } catch (Exception e) {
-            ReplyHandler.sendError(message, "taskName, documentId and appId must be set", e);
+            ReplyHandler.sendError(message, "taskName, documentId and uaid must be set", e);
         }
     }
 
