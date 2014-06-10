@@ -71,7 +71,10 @@ public class Task {
         this.currentStage = currentStage;
     }
 
-    // set and return the next stage
+    /**
+     * set and return the next stage, once you call this its up to YOU to call the app mentioned in the stage.
+     * @return
+     */
     public Stage nextStage() {
         if (currentStage<stages.size()) {
             setCurrentStage(currentStage + 1);
